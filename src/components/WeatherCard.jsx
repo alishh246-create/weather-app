@@ -10,6 +10,7 @@ function WeatherCard() {
 
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         if (!city) return;
@@ -17,16 +18,21 @@ function WeatherCard() {
         const fetchWeather = async () => {
             try {
                 setLoading(true);
+                setError("");
 
                 const apiKey = "c53950719ae12faa751e411d9fd5baa3";
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
                 const res = await fetch(url);
                 const data = await res.json();
+                if(data.cod!==200){
+                    throw new Error("city not found")
+                }
 
                 setWeather(data);
             } catch (error) {
                 console.log(error);
+                setError(error.message)
             } finally {
                 setLoading(false);
             }
@@ -47,15 +53,23 @@ function WeatherCard() {
 
 
     // API fail check
-    if (!weather || weather.cod !== 200) {
-        return (
-
-           <div className="text-black text-center">
-  <div className="animate-spin rounded-full h-10 w-10 border-4 border-white mx-auto"></div>
-  <p className="mt-3">Fetching weather...</p>
-</div>
-        );
-    }
+    if (loading) {
+  return (
+    <div className="text-white text-center mt-20">
+      <div className="animate-spin rounded-full h-10 w-10 border-4 border-white mx-auto"></div>
+      <p className="mt-3">Fetching weather...</p>
+    </div>
+  );
+}
+if (error) {
+  return (
+    <div className="text-center mt-20 text-white">
+      <h2 className="text-2xl font-bold">
+        {error}
+      </h2>
+    </div>
+  );
+}
 
     return (
         <div className="relative w-full h-screen flex items-center justify-center">
